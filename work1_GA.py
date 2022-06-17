@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 PI = 3.1415
 DNA_SIZE = 24  # 二进制编码位数
-POP_SIZE = 100  # 种群中个体数量
+POP_SIZE = 1000  # 种群中个体数量
 CROSSOVER_RATE = 0.6  # 交叉概率
 MUTATION_RATE = 0.001  # 变异概率
 N_GENERATIONS = 100
@@ -103,11 +103,13 @@ def print_info(pop):
 
 
 if __name__ == "__main__":
-    fig = plt.figure()
+    fig = plt.figure(0)
     ax = Axes3D(fig)
     plt.ion()  # 将画图模式改为交互模式，程序遇到plt.show不会暂停，而是继续执行
-    plot_3d(ax)
+    plot_3d(ax)  # 开始3d绘图
 
+    mean_fitness = []
+    best_fitness = []
     pop = np.random.randint(2, size=(POP_SIZE, DNA_SIZE * 2))  # matrix (POP_SIZE, DNA_SIZE)
     for _ in range(N_GENERATIONS):  # 迭代N代
         x, y = translateDNA(pop)
@@ -119,9 +121,24 @@ if __name__ == "__main__":
         pop = np.array(crossover_and_mutation(pop, CROSSOVER_RATE))
         fitness = get_fitness(pop)
         pop = select(pop, fitness)  # 选择生成新的种群
+        mean_fitness.append(np.mean(F(x, y)))
+        best_fitness_index = np.argmax(fitness)
+        best_fitness.append(F(x[best_fitness_index], y[best_fitness_index]))
 
     print_info(pop)
     plt.ioff()
-    plot_3d(ax)
+    plot_3d(ax)  # 停止3d绘图
+
+    plt.figure(1)
+    plt.title("fitness in generations")
+    plt.xlabel("iterators", size=14)
+    plt.ylabel("fitness", size=14)
+    t = np.array([t for t in range(0, N_GENERATIONS)])
+    mean_fitness = np.array(mean_fitness)
+    best_fitness = np.array(best_fitness)
+    plt.plot(t, mean_fitness, label='mean fitness', color='r', linewidth=3)
+    plt.plot(t, best_fitness, label='best fitness', color='b', linewidth=3)
+    plt.legend(['mean fitness','best fitness'])  # 打出图例
+    plt.show()
 
 
